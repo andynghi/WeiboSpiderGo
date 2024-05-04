@@ -51,12 +51,12 @@ func getCookieStr(username_text string, password_text string) string {
 		fmt.Println("start a chromedriver service falid", err.Error())
 		return ""
 	}
-	//注意这里，server关闭之后，chrome窗口也会关闭
+	//Note here, after the server is closed, the chrome window will also be closed.
 	defer service.Stop()
 
 	// Connect to the WebDriver instance running locally.
 	caps := selenium.Capabilities{"browserName": "chrome"}
-	//禁止图片加载，加快渲染速度
+	//Disable image loading to speed up rendering
 	imagCaps := map[string]interface{}{
 		"profile.managed_default_content_settings.images": 2,
 	}
@@ -64,12 +64,12 @@ func getCookieStr(username_text string, password_text string) string {
 		Prefs: imagCaps,
 		Path:  "",
 		Args: []string{
-			"--headless", // 设置Chrome无头模式，在linux下运行，需要设置这个参数，否则会报错
+			"--headless", //Set Chrome headless mode. When running under Linux, you need to set this parameter, otherwise an error will be reported.
 			//"--no-sandbox",
-			"--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36", // 模拟user-agent，防反爬
+			"--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36", // Simulate user-agent to prevent anti-crawling
 		},
 	}
-	//以上是设置浏览器参数
+	//The above is to set browser parameters
 	caps.AddChrome(chromeCaps)
 	wd, err := selenium.NewRemote(caps, fmt.Sprintf("http://localhost:%d/wd/hub", port))
 	if err != nil {
@@ -108,7 +108,7 @@ func getCookieStr(username_text string, password_text string) string {
 		if err != nil {
 			return false, nil
 		}
-		if tit != "我的首页" {
+		if tit != "My homepage" {
 			return false, nil
 		}
 		return true, nil

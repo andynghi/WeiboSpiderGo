@@ -71,7 +71,7 @@ func main() {
 	if config.Conf.GetBool("SCRAPY_TYPE.Follow") {
 		scrapyFollow()
 	}
-	//修复去重问题
+	//Fix deduplication problem
 	if config.Conf.GetBool("SCRAPY_TYPE.Fans") {
 		scrapyFans()
 	}

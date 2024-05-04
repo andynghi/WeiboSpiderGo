@@ -17,7 +17,7 @@ func SetTweetCallback(getTweetsC, getContentSubC, getCommentSubC *colly.Collecto
 		content := string(r.Body)
 		uid := utils.ReParse(`(\d+)/profile`, r.Request.URL.String())
 		if strings.Contains(r.Request.URL.String(), "page=1") {
-			allPage := utils.ReParse(`/>&nbsp;1/(\d+)页</div>`, content)
+			allPage := utils.ReParse(`/> 1/(\d+)page</div>`, content)
 			pageNum, _ := strconv.Atoi(allPage)
 			for i := 2; i < (pageNum + 1); i++ {
 				link := fmt.Sprintf("%s/%s/profile?page=%d", BaseUrl, uid, i)
@@ -28,56 +28,56 @@ func SetTweetCallback(getTweetsC, getContentSubC, getCommentSubC *colly.Collecto
 	getTweetsC.OnXML(`//div[@class="c" and @id]`, func(element *colly.XMLElement) {
 		tweet := mdb.Tweets{}
 		tweet.CrawlTime = int32(time.Now().Unix())
-		tweetRepostUrl := element.ChildAttr(`.//a[contains(text(),"转发[")]`, "href")
+		tweetRepostUrl := element.ChildAttr(`.//a[contains(text(),"Retweet[")]`, "href")
 		tweetItemId := utils.ReParse(`/repost/(.*?)\?`, tweetRepostUrl)
 		tweet.UserId = utils.ReParse(`uid=(\d+)`, tweetRepostUrl)
 		tweet.WeiboUrl = fmt.Sprintf("https://weibo.com/%s/%s", tweet.UserId, tweetItemId)
 		tweet.Id_ = fmt.Sprintf("%s_%s", tweet.UserId, tweetItemId)
 		createTimeInfo := element.ChildText(`.//span[@class="ct"]`)
-		if strings.Contains(createTimeInfo, "来自") {
-			timeStr := strings.Split(createTimeInfo, "来自")[0]
+		if strings.Contains(createTimeInfo, "from") {
+			timeStr := strings.Split(createTimeInfo, "from")[0]
 			timeStr = strings.TrimSpace(timeStr)
 			tweet.CreatedAt = utils.ConvTime(timeStr)
-			tweet.Tool = strings.Split(createTimeInfo, "来自")[1]
+			tweet.Tool = strings.Split(createTimeInfo, "from")[1]
 		} else {
 			timeStr := strings.TrimSpace(createTimeInfo)
 			tweet.CreatedAt = utils.ConvTime(timeStr)
 		}
 
-		likeNumText := element.ChildText(`.//a[contains(text(),"赞[")]`)
+		likeNumText := element.ChildText(`.//a[contains(text(),"Like[")]`)
 		likeNum, _ := strconv.Atoi(utils.ReParse(`\d+`, likeNumText))
 		tweet.LikeNum = int32(likeNum)
 
-		repostNumText := element.ChildText(`.//a[contains(text(),"转发[")]`)
+		repostNumText := element.ChildText(`.//a[contains(text(),"Repost[")]`)
 		repostNum, _ := strconv.Atoi(utils.ReParse(`\d+`, repostNumText))
 		tweet.RepostNum = int32(repostNum)
 
-		commentNumText := element.ChildText(`.//a[contains(text(),"评论[") and not(contains(text(),"原文"))]`)
+		commentNumText := element.ChildText(`.//a[contains(text(),"Comment[") and not(contains(text(),"original text"))]`)
 		commentNum, _ := strconv.Atoi(utils.ReParse(`\d+`, commentNumText))
 		tweet.CommentNum = int32(commentNum)
 
-		tweet.ImageUrl = element.ChildAttr(`.//img[@alt="图片"]`, "src")
+		tweet.ImageUrl = element.ChildAttr(`.//img[@alt="image"]`, "src")
 		tweet.VideoUrl = element.ChildAttr(`.//a[contains(@href,"https://m.weibo.cn/s/video/show?object_id=")]`, "href")
 
-		mapNode := element.ChildAttr(`.//a[contains(text(),"显示地图")]`, "href")
+		mapNode := element.ChildAttr(`.//a[contains(text(),"Display map")]`, "href")
 		if mapNode != "" {
 			tweet.LocationMapInfo = utils.ReParse(`xy=(.*?)&`, mapNode)
 		}
 
-		tweet.OriginWeibo = element.ChildAttr(`.//a[contains(text(),"原文评论[")]`, "href")
+		tweet.OriginWeibo = element.ChildAttr(`.//a[contains(text(),"Original Comment[")]`, "href")
 
-		allContentLink := element.ChildAttr(`.//a[text()="全文" and contains(@href,"ckAll=1")]`, "href")
+		allContentLink := element.ChildAttr(`.//a[text()="Full text" and contains(@href,"ckAll=1")]`, "href")
 		if allContentLink == "" {
-			//没有全文按钮
+			//No full text button
 			content := element.Text
-			if pos := strings.LastIndex(content, "转发理由:"); pos != -1 {
-				content = content[pos+len("转发理由:"):]
+			if pos := strings.LastIndex(content, "Reason for forwarding:"); pos != -1 {
+				content = content[pos+len("Reason for forwarding:"):]
 			}
-			content = content[0:strings.LastIndex(content, "赞")]
-			if pos := strings.LastIndex(content, "[组图共"); pos != -1 {
+			content = content[0:strings.LastIndex(content, "Like")]
+			if pos := strings.LastIndex(content, "[Total pictures in the group"); pos != -1 {
 				content = content[0:pos]
 			}
-			if pos := strings.LastIndex(content, "原图"); pos != -1 {
+			if pos := strings.LastIndex(content, "original image"); pos != -1 {
 				l := len(content)
 				if l >= pos+6 {
 					content = content[0:pos]
@@ -86,7 +86,7 @@ func SetTweetCallback(getTweetsC, getContentSubC, getCommentSubC *colly.Collecto
 			tweet.Content = strings.TrimSpace(content)
 			err := mdb.Insert(dbName, "Tweets", tweet)
 			if mgo.IsDup(err) {
-				//有重复数据
+				//There is duplicate data
 				fmt.Println("already scrapy")
 			}
 		} else {
@@ -109,13 +109,13 @@ func SetFullContentCallback(getContentSubC *colly.Collector) {
 		tweetInt := element.Response.Ctx.GetAny("tweet")
 		tweet := tweetInt.(mdb.Tweets)
 		content := element.Text
-		if pos := strings.LastIndex(content, "转发理由:"); pos != -1 {
-			content = content[pos+len("转发理由:"):]
+		if pos := strings.LastIndex(content, "Reason for forwarding:"); pos != -1 {
+			content = content[pos+len("Reason for forwarding:"):]
 		}
-		if pos := strings.LastIndex(content, "[组图共"); pos != -1 {
+		if pos := strings.LastIndex(content, "[Total pictures in the group"); pos != -1 {
 			content = content[0:pos]
 		}
-		if pos := strings.LastIndex(content, "原图"); pos != -1 {
+		if pos := strings.LastIndex(content, "original image"); pos != -1 {
 			l := len(content)
 			if l >= pos+6 {
 				content = content[0:pos]
@@ -124,7 +124,7 @@ func SetFullContentCallback(getContentSubC *colly.Collector) {
 		tweet.Content = strings.TrimSpace(content)
 		err := mdb.Insert(dbName, "Tweets", tweet)
 		if mgo.IsDup(err) {
-			//有重复数据
+			//There is duplicate data
 			fmt.Println("already scrapy")
 		}
 	})
@@ -134,7 +134,7 @@ func SetCommentCallback(getCommentSubC *colly.Collector) {
 	getCommentSubC.OnResponse(func(r *colly.Response) {
 		content := string(r.Body)
 		if strings.Contains(r.Request.URL.String(), "page=1") {
-			allPage := utils.ReParse(`/>&nbsp;1/(\d+)页</div>`, content)
+			allPage := utils.ReParse(`/> 1/(\d+)page</div>`, content)
 			pageNum, _ := strconv.Atoi(allPage)
 			for i := 2; i < (pageNum + 1); i++ {
 				pageUrl := strings.Replace(r.Request.URL.String(), "page=1", "page="+strconv.Itoa(i), -1)
@@ -153,19 +153,19 @@ func SetCommentCallback(getCommentSubC *colly.Collector) {
 		comment.CommentUserId = utils.ReParse(`/u/(\d+)`, commentUserUrl)
 		comment.Id_ = element.Attr("id")
 		createdAtInfo := element.ChildText(`.//span[@class="ct"]`)
-		likeNumText := element.ChildText(`.//a[contains(text(),"赞[")]`)
+		likeNumText := element.ChildText(`.//a[contains(text(),"Like[")]`)
 		likeNum, _ := strconv.Atoi(utils.ReParse(`\d+`, likeNumText))
 		comment.LikeNum = int32(likeNum)
 		comment.CreatedAt = utils.ConvTime(strings.Split(createdAtInfo, "\u0000")[0])
 		content := element.Text
-		content = content[0:strings.LastIndex(content, "赞")]
-		if pos := strings.LastIndex(content, "举报"); pos != -1 {
+		content = content[0:strings.LastIndex(content, "Like")]
+		if pos := strings.LastIndex(content, "Report"); pos != -1 {
 			content = content[0:pos]
 		}
 		comment.Content = strings.TrimSpace(content)
 		err := mdb.Insert(dbName, "Comments", comment)
 		if mgo.IsDup(err) {
-			//有重复数据
+			//There is duplicate data
 			fmt.Println("already scrapy")
 		}
 	})

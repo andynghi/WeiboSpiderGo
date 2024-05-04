@@ -51,7 +51,7 @@ func Update(db, collection string, selector, update interface{}) error {
 	return c.Update(selector, update)
 }
 
-//更新，如果不存在就插入一个新的数据 `upsert:true`
+// Update, insert new data if it does not exist `upsert:true`
 func Upsert(db, collection string, selector, update interface{}) error {
 	ms, c := connect(db, collection)
 	defer ms.Close()

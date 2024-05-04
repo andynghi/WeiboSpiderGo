@@ -11,20 +11,20 @@ import (
 	"time"
 )
 
-func SetFollowSeniorCallback(getFollowC *colly.Collector){
+func SetFollowSeniorCallback(getFollowC *colly.Collector) {
 	getFollowC.OnResponse(func(r *colly.Response) {
 		content := string(r.Body)
 		uid := utils.ReParse(`uid=(\d+)&`, r.Request.URL.String())
 		if strings.Contains(r.Request.URL.String(), "page=1") {
-			allPage := utils.ReParse(`/>&nbsp;1/(\d+)页</div>`, content)
+			allPage := utils.ReParse(`/> 1/(\d+)page</div>`, content)
 			pageNum, _ := strconv.Atoi(allPage)
 			for i := 2; i < (pageNum + 1); i++ {
-				link := fmt.Sprintf("%s/attgroup/change?cat=user&uid=%s&page=%d",BaseUrl,uid,i)
+				link := fmt.Sprintf("%s/attgroup/change?cat=user&uid=%s&page=%d", BaseUrl, uid, i)
 				getFollowC.Visit(link)
 			}
 		}
 	})
-	getFollowC.OnXML(`//a[text()="关注他" or text()="关注她" or text()="取消关注"]/@href`, func(element *colly.XMLElement) {
+	getFollowC.OnXML(`//a[text()="Follow him" or text()="Follow her" or text()="Unfollow"]/@href`, func(element *colly.XMLElement) {
 		followUrl := element.Text
 		uid := utils.ReParse(`uid=(\d+)`, followUrl)
 		ID := utils.ReParse(`uid=(\d+)`, element.Request.URL.String())
@@ -35,12 +35,12 @@ func SetFollowSeniorCallback(getFollowC *colly.Collector){
 		relationship.Id_ = ID + "-" + uid
 		err := mdb.Insert(dbName, "Relationships", relationship)
 		if mgo.IsDup(err) {
-			//有重复数据
+			//There is duplicate data
 			fmt.Println("already scrapy")
 		}
 	})
 }
 
-func GetFollowerSeniorUrl(uid string)string{
-	return fmt.Sprintf("%s/attgroup/change?cat=user&uid=%s&page=1",BaseUrl,uid)
+func GetFollowerSeniorUrl(uid string) string {
+	return fmt.Sprintf("%s/attgroup/change?cat=user&uid=%s&page=1", BaseUrl, uid)
 }

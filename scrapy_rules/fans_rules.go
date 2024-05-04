@@ -16,15 +16,15 @@ func SetFansCallback(getFansC *colly.Collector) {
 		content := string(r.Body)
 		uid := utils.ReParse(`(\d+)/fans`, r.Request.URL.String())
 		if strings.Contains(r.Request.URL.String(), "page=1") {
-			allPage := utils.ReParse(`/>&nbsp;1/(\d+)页</div>`, content)
+			allPage := utils.ReParse(`/> 1/(\d+)page</div>`, content)
 			pageNum, _ := strconv.Atoi(allPage)
 			for i := 2; i < (pageNum + 1); i++ {
-				link := fmt.Sprintf("%s/%s/fans?page=%d",BaseUrl,uid,i)
+				link := fmt.Sprintf("%s/%s/fans?page=%d", BaseUrl, uid, i)
 				getFansC.Visit(link)
 			}
 		}
 	})
-	getFansC.OnXML(`//a[text()="关注他" or text()="关注她" or text()="移除"]/@href`, func(element *colly.XMLElement) {
+	getFansC.OnXML(`//a[text()="Follow him" or text()="Follow her" or text()="Remove"]/@href`, func(element *colly.XMLElement) {
 		followUrl := element.Text
 		uid := utils.ReParse(`uid=(\d+)`, followUrl)
 		ID := utils.ReParse(`(\d+)/fans`, element.Request.URL.String())
@@ -35,12 +35,12 @@ func SetFansCallback(getFansC *colly.Collector) {
 		relationship.Id_ = uid + "-" + ID
 		err := mdb.Insert(dbName, "Relationships", relationship)
 		if mgo.IsDup(err) {
-			//有重复数据
+			//There is duplicate data
 			fmt.Println("already scrapy")
 		}
 	})
 }
 
-func GetFansUrl(uid string) string{
-	return fmt.Sprintf("%s/%s/fans?page=1",BaseUrl,uid)
+func GetFansUrl(uid string) string {
+	return fmt.Sprintf("%s/%s/fans?page=1", BaseUrl, uid)
 }

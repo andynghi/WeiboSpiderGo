@@ -30,21 +30,21 @@ func ReParseMayLi(pattern string, content string) [][]string {
 
 func ConvTime(timeStr string) string {
 	now_time := time.Now()
-	if strings.Contains(timeStr, "分钟前") {
-		min, _ := strconv.Atoi(ReParse(`^(\d+)分钟`, timeStr))
+	if strings.Contains(timeStr, "minutes ago") {
+		min, _ := strconv.Atoi(ReParse(`^(\d+)minute`, timeStr))
 		createdTimep := now_time.Add(-time.Duration(min) * time.Minute)
 		return createdTimep.Format("2006-01-02 15:04")
 	}
-	if strings.Contains(timeStr, "小时前") {
-		hour, _ := strconv.Atoi(ReParse(`^(\d+)小时`, timeStr))
+	if strings.Contains(timeStr, "hours ago") {
+		hour, _ := strconv.Atoi(ReParse(`^(\d+)hour`, timeStr))
 		createdTimep := now_time.Add(-time.Duration(hour) * time.Hour)
 		return createdTimep.Format("2006-01-02 15:04")
 	}
-	if strings.Contains(timeStr, "今天") {
-		return strings.Replace(timeStr, "今天", now_time.Format("2006-01-02"), -1)
+	if strings.Contains(timeStr, "Today") {
+		return strings.Replace(timeStr, "Today", now_time.Format("2006-01-02"), -1)
 	}
-	if strings.Contains(timeStr, "月") {
-		rp := strings.NewReplacer("月", "-", "日", "")
+	if strings.Contains(timeStr, "month") {
+		rp := strings.NewReplacer("month", "-", "day", "")
 		return rp.Replace(timeStr)
 	}
 	return timeStr

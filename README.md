@@ -2,42 +2,42 @@
 
 It's a sina weibo (chinese twitter) spider written by golang golly
 
-可以双击运行的微博爬虫
+Weibo crawler that can be run by double-clicking
 
-#### 使用准备
+#### Preparation for use
 
-- chrome driver安装
+- chrome driver installation
 
-  本地需要安装chrome浏览器、以及下载对应版本的chromedriver。例如，本机上安装了版本号为78的chrome则需要在https://chromedriver.chromium.org/downloads 链接中下载版本号为78的，对应平台的chromedriver.zip
+  You need to install the chrome browser locally and download the corresponding version of chromedriver. For example, if Chrome with version number 78 is installed on this machine, you need to download version number 78 from the link https://chromedriver.chromium.org/downloads, corresponding to the platform's chromedriver.zip
 
-  将解压后的chromedriver文件放于项目的browser目录下
+  Place the decompressed chromedriver file in the browser directory of the project
 
-- mongodb安装
+- mongodb installation
 
-  安装mongodb，将地址和端口、数据库名填写到config.yaml中
+  Install mongodb and fill in the address, port, and database name into config.yaml
 
-#### 使用
+#### use
 
-完成上一步的使用准备工作后，可以下载release中的代码，在上方栏的release页中，分别有mac版与windows exe版本的压缩包，可以直接下载运行
+After completing the preparations for use in the previous step, you can download the code in the release. In the release page in the upper column, there are compressed packages of the mac version and the windows exe version, which can be downloaded and run directly.
 
-填写需要登陆的账号于account/account.txt中，每行一个账号，源码的account文件夹可以看到示例，双击login开始批量登陆（账号要选择免验证码的邮箱登陆的账号）
+Fill in the accounts that need to be logged in in account/account.txt, one account per line. You can see the example in the account folder of the source code. Double-click login to start batch login (the account must be logged in via an email address that does not require a verification code)
 
-在account/target.txt文件中，同样每行一个，写下要爬取的用户id，双击weibo_spider或weibo_spider.exe开始爬取
+In the account/target.txt file, also one per line, write down the user ID to be crawled, double-click weibo_spider or weibo_spider.exe to start crawling
 
-希望大家不要涸泽而渔，release中的版本爬取间隔为10秒左右
+I hope you won’t fish in the lake. The crawling interval for versions in release is about 10 seconds.
 
-#### 配置文件内容
+#### Configuration file content
 
-配置文件为根目录下的config.yaml
+The configuration file is config.yaml in the root directory
 
-配置文件含义
+Configuration file meaning
 
 ```
-MONGO_ADDRESS - mongodb地址
-DB_NAME       - mongodb数据库名
-ACCOUNT_FILE  - 存放要爬取的目标账户id的文件
+MONGO_ADDRESS - mongodb address
+DB_NAME - mongodb database name
+ACCOUNT_FILE - a file that stores the target account id to be crawled
 DRIVER_PATH: "/browser/chromedriver"
-# 爬取类型
+# Crawl type
 SCRAPY_TYPE:
   Info: True
   Follow: False
@@ -53,19 +53,19 @@ SCRAPY_TYPE:
 
 
 
-#### 编译
+#### Compile
 
-安装依赖后使用
+Use after installing dependencies
 
 ```
 go build login.go
 go build weibo_spider.go
 ```
 
-进行编译
+compile
 
-#### 下一步
+#### Next step
 
-- [ ] 代理ip添加
-- [ ] 图片视频下载
+- [ ] proxy ip added
+- [ ] Picture and video download
 
